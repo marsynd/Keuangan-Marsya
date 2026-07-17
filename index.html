@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Catatan Keuangan Marsya</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --paper:#FAFAF7;
+    --paper-shadow:#E9E7DF;
+    --ink:#1E1D1B;
+    --ink-soft:#6B6862;
+    --stamp:#B23A2E;
+    --stamp-soft:#B23A2E22;
+    --ok:#3D6B4C;
+    --ok-soft:#3D6B4C1c;
+    --line:#D8D5CB;
+    --acc-a:#2E4C6E;
+    --acc-b:#8A5A2E;
+  }
+  * { box-sizing:border-box; }
+  html, body{ margin:0; padding:0; background:#EDEBE3; }
+  body{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:20px 8px 40px;
+    min-height:100vh;
+  }
+  .wrap{ width:100%; max-width:460px; }
+
+  .card{
+    background:var(--paper);
+    box-shadow:0 18px 40px -18px rgba(0,0,0,0.35), 0 2px 0 var(--paper-shadow);
+    padding:18px 22px 22px;
+  }
+
+  .header{ text-align:center; padding-bottom:14px; border-bottom:1px dashed var(--line); }
+  .header h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:19px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    margin:0 0 3px;
+  }
+  .header p{ margin:0; font-size:10.5px; color:var(--ink-soft); letter-spacing:0.04em; }
+
+  .tabs{
+    display:flex;
+    margin-top:14px;
+    border-bottom:1px solid var(--line);
+  }
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:9px 4px;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    background:none;
+    border-top:none; border-left:none; border-right:none;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .tab.active{ color:var(--ink); border-bottom-color:var(--stamp); font-weight:600; }
+
+  .section{ padding-top:14px; }
+
+  label{
+    display:block;
+    font-size:10px;
+    letter-spacing:0.07em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:3px;
+  }
+  input, select{
+    width:100%;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:8px 9px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    outline:none;
+  }
+  input:focus, select:focus{ border-color:var(--stamp); }
+  .row{ display:flex; gap:8px; margin-bottom:8px; }
+  .row > *{ flex:1; }
+
+  .toggle-group{ display:flex; gap:6px; margin-bottom:10px; }
+  .toggle-btn{
+    flex:1;
+    padding:8px;
+    text-align:center;
+    font-size:11px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .toggle-btn.active-acc-A{ background:var(--acc-a); color:#fff; border-color:var(--acc-a); }
+  .toggle-btn.active-acc-B{ background:var(--acc-b); color:#fff; border-color:var(--acc-b); }
+  .toggle-btn.active-type-income{ background:var(--ok); color:#fff; border-color:var(--ok); }
+  .toggle-btn.active-type-expense{ background:var(--stamp); color:#fff; border-color:var(--stamp); }
+
+  .add-btn{
+    width:100%;
+    margin-top:6px;
+    padding:10px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.07em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .add-btn:hover{ opacity:0.85; }
+
+  .nav-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:4px 0 10px;
+  }
+  .nav-row button{
+    background:none; border:none; font-size:14px; color:var(--ink); cursor:pointer; padding:4px 8px;
+  }
+  .nav-row button:hover{ color:var(--stamp); }
+  .nav-row .cur{ font-size:12px; text-align:center; letter-spacing:0.03em; }
+  .nav-row .cur span{ display:block; font-size:9.5px; color:var(--ink-soft); }
+
+  .acc-summary{ display:flex; gap:8px; margin-bottom:10px; }
+  .acc-box{
+    flex:1;
+    border:1px solid var(--line);
+    padding:8px 10px;
+  }
+  .acc-box .acc-label{
+    font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:4px;
+  }
+  .acc-box .acc-in{ font-size:11px; color:var(--ok); }
+  .acc-box .acc-out{ font-size:11px; color:var(--stamp); }
+  .acc-box .acc-net{ font-size:13px; font-weight:600; margin-top:3px; border-top:1px dotted var(--line); padding-top:3px; }
+
+  .cat-breakdown{ margin-top:10px; }
+  .cat-row{
+    display:flex; justify-content:space-between; font-size:11.5px; padding:4px 0;
+    border-bottom:1px dotted var(--line);
+  }
+  .cat-row .cat-name{ color:var(--ink-soft); }
+
+  .line-items{ padding-bottom:4px; }
+  .empty-state{ text-align:center; font-size:11px; color:var(--ink-soft); padding:20px 0; }
+  .item{
+    display:flex; align-items:baseline; gap:6px; padding:7px 0;
+    border-bottom:1px dotted var(--line); font-size:12px;
+  }
+  .item .dot{ width:7px; height:7px; border-radius:50%; flex:0 0 auto; margin-right:2px; }
+  .dot-A{ background:var(--acc-a); }
+  .dot-B{ background:var(--acc-b); }
+  .item .name{ flex:1; min-width:0; }
+  .item .name .tag{ display:block; font-size:9px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.05em; margin-top:1px; }
+  .item .amt.income{ color:var(--ok); font-weight:600; white-space:nowrap; }
+  .item .amt.expense{ color:var(--stamp); font-weight:600; white-space:nowrap; }
+  .item .del{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:13px; padding:0 0 0 4px; }
+  .item .del:hover{ color:var(--stamp); }
+
+  .grand-totals{ padding-top:10px; margin-top:8px; border-top:1px solid var(--ink); }
+  .grand-row{ display:flex; justify-content:space-between; font-size:12px; padding:2px 0; }
+  .grand-row.net{
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:15px;
+    padding-top:6px; margin-top:4px; border-top:1px dashed var(--line);
+  }
+
+  .footer-note{ text-align:center; font-size:9.5px; color:var(--ink-soft); padding-top:14px; }
+
+  .pie-wrap{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:6px 0 4px;
+  }
+  .pie-wrap svg{ flex:0 0 auto; }
+  .pie-legend{ flex:1; min-width:0; }
+  .pie-legend-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:10.5px;
+    padding:2px 0;
+  }
+  .pie-legend-row .swatch{
+    width:8px; height:8px; border-radius:2px; flex:0 0 auto;
+  }
+  .pie-legend-row .lbl{ flex:1; color:var(--ink-soft); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pie-legend-row .pct{ color:var(--ink); font-weight:600; }
+
+  @media (max-width:420px){ .card{ padding:16px; } }
+</style>
+</head>
+<body>
+<div id="app-root"></div>
+<script>
+(function(){
+  const STORAGE_KEY = 'marsya_finance_txs';
+  const ACCOUNTS = { A: "Mandiri A (Gaji)", B: "Mandiri B (Harian)" };
+  const CATEGORIES_EXPENSE = ["Jajan","Transport","Belanja","Angsuran","Tagihan","Makan","Kesehatan","Hiburan","Lainnya"];
+  const CATEGORIES_INCOME = ["Gaji","Transfer Masuk","Lainnya"];
+
+  let txs = [];
+  let activeTab = 'catat';
+  let form = { account:'B', type:'expense', category: CATEGORIES_EXPENSE[0] };
+  let dayDate = startOfDay(new Date());
+  let monthDate = startOfMonth(new Date());
+
+  function startOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
+  function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function dateKey(d){ return d.toISOString().slice(0,10); }
+  function monthKey(d){ return d.toISOString().slice(0,7); }
+  function fmtRp(n){ return "Rp " + Math.round(n).toLocaleString("id-ID"); }
+  function fmtDayLabel(d){ return d.toLocaleDateString("id-ID",{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
+  function fmtMonthLabel(d){ return d.toLocaleDateString("id-ID",{month:'long',year:'numeric'}); }
+  function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      txs = raw ? JSON.parse(raw) : [];
+    }catch(e){ txs = []; }
+    render();
+  }
+  function saveData(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(txs)); }
+    catch(e){ console.error('Gagal simpan', e); }
+  }
+
+  function addTx(name, amount, account, type, category){
+    txs.push({
+      id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+      name, amount, account, type, category,
+      date: dateKey(new Date())
+    });
+    saveData(); render();
+  }
+  function deleteTx(id){ txs = txs.filter(t=>t.id!==id); saveData(); render(); }
+
+  const PIE_COLORS = ['#B23A2E','#2E4C6E','#3D6B4C','#8A5A2E','#6B4E8E','#C99A3E','#4E8E8A','#8E4E6B','#5B5B5B'];
+
+  function buildPieChart(catTotals){
+    const entries = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+    const total = entries.reduce((s,[,v])=>s+v,0);
+    if(total <= 0 || entries.length===0){
+      return `<div class="empty-state">Belum ada data buat diagramnya.</div>`;
+    }
+    const r = 42, cx = 52, cy = 52, sw = 20;
+    const circumference = 2 * Math.PI * r;
+    let offsetAcc = 0;
+    const slices = entries.map(([label,val], i) => {
+      const frac = val/total;
+      const dash = frac * circumference;
+      const gap = circumference - dash;
+      const dashoffset = -offsetAcc;
+      offsetAcc += dash;
+      const color = PIE_COLORS[i % PIE_COLORS.length];
+      return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${dashoffset}" transform="rotate(-90 ${cx} ${cy})" />`;
+    }).join('');
+
+    const legend = entries.map(([label,val], i) => {
+      const pct = Math.round((val/total)*100);
+      const color = PIE_COLORS[i % PIE_COLORS.length];
+      return `<div class="pie-legend-row"><span class="swatch" style="background:${color}"></span><span class="lbl">${label}</span><span class="pct">${pct}%</span></div>`;
+    }).join('');
+
+    return `
+      <div class="pie-wrap">
+        <svg width="104" height="104" viewBox="0 0 104 104">${slices}</svg>
+        <div class="pie-legend">${legend}</div>
+      </div>
+    `;
+  }
+
+  function renderCatatTab(){
+    const cats = form.type === 'expense' ? CATEGORIES_EXPENSE : CATEGORIES_INCOME;
+    if(!cats.includes(form.category)) form.category = cats[0];
+    return `
+      <div class="section">
+        <label>Rekening</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn ${form.account==='A'?'active-acc-A':''}" data-acc="A">Mandiri A</button>
+          <button type="button" class="toggle-btn ${form.account==='B'?'active-acc-B':''}" data-acc="B">Mandiri B</button>
+        </div>
+
+        <label>Jenis</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn ${form.type==='income'?'active-type-income':''}" data-type="income">Pemasukan</button>
+          <button type="button" class="toggle-btn ${form.type==='expense'?'active-type-expense':''}" data-type="expense">Pengeluaran</button>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Keterangan</label>
+            <input id="inp-name" type="text" placeholder="mis. Makan siang" />
+          </div>
+          <div style="flex:0 0 120px">
+            <label>Jumlah (Rp)</label>
+            <input id="inp-amount" type="number" min="0" placeholder="0" />
+          </div>
+        </div>
+
+        <label>Kategori</label>
+        <select id="inp-cat">
+          ${cats.map(c=>`<option value="${c}" ${c===form.category?'selected':''}>${c}</option>`).join('')}
+        </select>
+
+        <button class="add-btn" id="btn-add">+ Tambah Catatan</button>
+      </div>
+    `;
+  }
+
+  function renderHarianTab(){
+    const key = dateKey(dayDate);
+    const todays = txs.filter(t=>t.date===key);
+    const isToday = key === dateKey(startOfDay(new Date()));
+
+    const perAcc = { A:{in:0,out:0}, B:{in:0,out:0} };
+    const catTotals = {};
+    todays.forEach(t=>{
+      if(t.type==='income') perAcc[t.account].in += t.amount;
+      else { perAcc[t.account].out += t.amount; catTotals[t.category] = (catTotals[t.category]||0)+t.amount; }
+    });
+
+    return `
+      <div class="section">
+        <div class="nav-row">
+          <button id="day-prev">&larr;</button>
+          <div class="cur">${isToday?'HARI INI':fmtDayLabel(dayDate).toUpperCase()}<span>${isToday?fmtDayLabel(dayDate):''}</span></div>
+          <button id="day-next">&rarr;</button>
+        </div>
+
+        <div class="acc-summary">
+          ${['A','B'].map(a => `
+            <div class="acc-box">
+              <div class="acc-label">${ACCOUNTS[a]}</div>
+              <div class="acc-in">Masuk ${fmtRp(perAcc[a].in)}</div>
+              <div class="acc-out">Keluar ${fmtRp(perAcc[a].out)}</div>
+              <div class="acc-net">${fmtRp(perAcc[a].in - perAcc[a].out)}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <label>Pengeluaran per Kategori</label>
+        ${buildPieChart(catTotals)}
+
+        <div class="line-items">
+          ${todays.length===0 ? `<div class="empty-state">Belum ada catatan untuk tanggal ini.</div>` :
+            todays.slice().reverse().map(t => `
+              <div class="item">
+                <span class="dot dot-${t.account}"></span>
+                <div class="name">${escapeHtml(t.name)}<span class="tag">${ACCOUNTS[t.account].split(' ')[0]+' '+t.account} &middot; ${t.category}</span></div>
+                <div class="amt ${t.type}">${t.type==='income'?'+':'-'}${fmtRp(t.amount)}</div>
+                <button class="del" data-id="${t.id}">&times;</button>
+              </div>
+            `).join('')
+          }
+        </div>
+
+        <div class="grand-totals">
+          <div class="grand-row"><span>Total Masuk</span><span>${fmtRp(perAcc.A.in+perAcc.B.in)}</span></div>
+          <div class="grand-row"><span>Total Keluar</span><span>${fmtRp(perAcc.A.out+perAcc.B.out)}</span></div>
+          <div class="grand-row net"><span>Selisih</span><span>${fmtRp((perAcc.A.in+perAcc.B.in)-(perAcc.A.out+perAcc.B.out))}</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderBulananTab(){
+    const key = monthKey(monthDate);
+    const monthTxs = txs.filter(t=>t.date.slice(0,7)===key);
+
+    const perAcc = { A:{in:0,out:0}, B:{in:0,out:0} };
+    const catTotals = {};
+    monthTxs.forEach(t=>{
+      if(t.type==='income') perAcc[t.account].in += t.amount;
+      else { perAcc[t.account].out += t.amount; catTotals[t.category] = (catTotals[t.category]||0)+t.amount; }
+    });
+    const sortedCats = Object.entries(catTotals).sort((a,b)=>b[1]-a[1]);
+
+    return `
+      <div class="section">
+        <div class="nav-row">
+          <button id="month-prev">&larr;</button>
+          <div class="cur">${fmtMonthLabel(monthDate).toUpperCase()}</div>
+          <button id="month-next">&rarr;</button>
+        </div>
+
+        <div class="acc-summary">
+          ${['A','B'].map(a => `
+            <div class="acc-box">
+              <div class="acc-label">${ACCOUNTS[a]}</div>
+              <div class="acc-in">Masuk ${fmtRp(perAcc[a].in)}</div>
+              <div class="acc-out">Keluar ${fmtRp(perAcc[a].out)}</div>
+              <div class="acc-net">${fmtRp(perAcc[a].in - perAcc[a].out)}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="cat-breakdown">
+          <label>Pengeluaran per Kategori</label>
+          ${buildPieChart(catTotals)}
+        </div>
+
+        <div class="grand-totals">
+          <div class="grand-row"><span>Total Masuk</span><span>${fmtRp(perAcc.A.in+perAcc.B.in)}</span></div>
+          <div class="grand-row"><span>Total Keluar</span><span>${fmtRp(perAcc.A.out+perAcc.B.out)}</span></div>
+          <div class="grand-row net"><span>Selisih</span><span>${fmtRp((perAcc.A.in+perAcc.B.in)-(perAcc.A.out+perAcc.B.out))}</span></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function render(){
+    const root = document.getElementById('app-root');
+    root.innerHTML = `
+      <div class="wrap">
+        <div class="card">
+          <div class="header">
+            <h1>Catatan Keuangan Marsya</h1>
+            <p>Mandiri A &middot; Mandiri B</p>
+          </div>
+          <div class="tabs">
+            <button class="tab ${activeTab==='catat'?'active':''}" data-tab="catat">Catat</button>
+            <button class="tab ${activeTab==='harian'?'active':''}" data-tab="harian">Harian</button>
+            <button class="tab ${activeTab==='bulanan'?'active':''}" data-tab="bulanan">Bulanan</button>
+          </div>
+          ${activeTab==='catat' ? renderCatatTab() : activeTab==='harian' ? renderHarianTab() : renderBulananTab()}
+          <div class="footer-note">Data tersimpan otomatis di browser ini</div>
+          <div class="footer-note" style="margin-top:2px;">&copy; ${new Date().getFullYear()} Marsya</div>
+        </div>
+      </div>
+    `;
+
+    document.querySelectorAll('.tab').forEach(btn=>{
+      btn.onclick = () => { activeTab = btn.dataset.tab; render(); };
+    });
+
+    if(activeTab==='catat'){
+      document.querySelectorAll('[data-acc]').forEach(btn=>{
+        btn.onclick = () => { form.account = btn.dataset.acc; render(); };
+      });
+      document.querySelectorAll('[data-type]').forEach(btn=>{
+        btn.onclick = () => { form.type = btn.dataset.type; render(); };
+      });
+      const addBtn = document.getElementById('btn-add');
+      const doAdd = () => {
+        const nameEl = document.getElementById('inp-name');
+        const amtEl = document.getElementById('inp-amount');
+        const catEl = document.getElementById('inp-cat');
+        const name = nameEl.value.trim();
+        const amount = parseFloat(amtEl.value);
+        if(!name || !amount || amount<=0){
+          nameEl.style.borderColor = !name ? 'var(--stamp)' : 'var(--line)';
+          amtEl.style.borderColor = (!amount||amount<=0) ? 'var(--stamp)' : 'var(--line)';
+          return;
+        }
+        addTx(name, amount, form.account, form.type, catEl.value);
+      };
+      addBtn.onclick = doAdd;
+      ['inp-name','inp-amount'].forEach(id=>{
+        document.getElementById(id).addEventListener('keydown', e=>{ if(e.key==='Enter') doAdd(); });
+      });
+    }
+
+    if(activeTab==='harian'){
+      document.getElementById('day-prev').onclick = () => { dayDate.setDate(dayDate.getDate()-1); render(); };
+      document.getElementById('day-next').onclick = () => { dayDate.setDate(dayDate.getDate()+1); render(); };
+      document.querySelectorAll('.del').forEach(btn=>{ btn.onclick = () => deleteTx(btn.dataset.id); });
+    }
+
+    if(activeTab==='bulanan'){
+      document.getElementById('month-prev').onclick = () => { monthDate.setMonth(monthDate.getMonth()-1); render(); };
+      document.getElementById('month-next').onclick = () => { monthDate.setMonth(monthDate.getMonth()+1); render(); };
+    }
+  }
+
+  loadData();
+})();
+</script>
+</body>
+</html>
